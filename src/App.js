@@ -64,15 +64,17 @@ const INIT_GASTOS = [
 const EMPTY_F = { desc:"", monto:"", cuotas:"1", cp:"0", personas:["yo"], cat:"Otro", post:false };
 
 export default function App() {
-  const [gastos, setGastos] = useState(INIT_GASTOS);
-const [loaded, setLoaded] = useState(false);
+  const [gastos, setGastos] = useState([]);
+  const [loaded, setLoaded] = useState(false);
 
 useEffect(() => {
   async function load() {
     const d = await getDoc(doc(db, "datos", "cmr-v2"));
-    if (d.exists() && d.data().gastos) {
+    if (d.exists() && d.data().gastos && d.data().gastos.length > 0) {
       setGastos(d.data().gastos);
       if (d.data().personas) setPersonas(d.data().personas);
+    } else {
+      setGastos(INIT_GASTOS);
     }
     setLoaded(true);
   }
