@@ -1,4 +1,18 @@
 import { useState, useMemo } from "react";
+import { initializeApp } from "firebase/app";
+import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA5F2BbLININmowaIZs_EIyGLKIMM5USe0",
+  authDomain: "gestor-tc.firebaseapp.com",
+  projectId: "gestor-tc",
+  storageBucket: "gestor-tc.firebasestorage.app",
+  messagingSenderId: "956769523283",
+  appId: "1:956769523283:web:3ba930eb79c88f69c898a6"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 const PALETTE   = ["#6EE7C0","#7EB8F7","#F7C97E","#F77EB8","#B87EF7","#F7977E","#7EF7B8","#A8D8EA"];
 const CATS      = ["Supermercado","Combustible","Restaurante","Salud","Ropa","Tecnología","Entretenimiento","Servicios","Otro"];
@@ -50,7 +64,20 @@ const INIT_GASTOS = [
 const EMPTY_F = { desc:"", monto:"", cuotas:"1", cp:"0", personas:["yo"], cat:"Otro", post:false };
 
 export default function App() {
-  const [gastos,   setGastos]   = useState(INIT_GASTOS);
+  const [gastos, setGastos] = useState(INIT_GASTOS);
+const [loaded, setLoaded] = useState(false);
+
+useEffect(() => {
+  async function load() {
+    const d = await getDoc(doc(db, "datos", "cmr-v2"));
+    if (d.exists() && d.data().gastos) {
+      setGastos(d.data().gastos);
+      if (d.data().personas) setPersonas(d.data().personas);
+    }
+    setLoaded(true);
+  }
+  load();
+}, []);
   const [personas, setPersonas] = useState(INIT_PERSONAS);
   const [vista,    setVista]    = useState("dashboard");
   const [filtroP,  setFiltroP]  = useState("todos");
@@ -75,7 +102,10 @@ export default function App() {
   const [pColor,   setPColor]   = useState(PALETTE[0]);
   const [newLabel, setNewLabel] = useState("");
   const [newColor, setNewColor] = useState(PALETTE[3]);
-
+  useEffect(() => {
+  if (!loaded) return;
+  setDoc(doc(db, "datos", "cmr-v2"), { gastos, personas }, { merge: true });
+}, [gastos, personas, loaded]);
   // ── Métricas ─────────────────────────────────────────────────────────────────
   const diasPagar    = daysTo(fechaPago);
   const conCuotas    = gastos.filter(g => g.cuotas > 1 && g.cp < g.cuotas);
