@@ -106,7 +106,10 @@ useEffect(() => {
   const [newColor, setNewColor] = useState(PALETTE[3]);
   useEffect(() => {
   if (!loaded) return;
-  setDoc(doc(db, "datos", "cmr-v2"), { gastos, personas }, { merge: true });
+  const timeout = setTimeout(() => {
+    setDoc(doc(db, "datos", "cmr-v2"), { gastos, personas }, { merge: true });
+  }, 500);
+  return () => clearTimeout(timeout);
 }, [gastos, personas, loaded]);
   // ── Métricas ─────────────────────────────────────────────────────────────────
   const diasPagar    = daysTo(fechaPago);
