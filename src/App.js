@@ -105,11 +105,14 @@ useEffect(() => {
   const [newLabel, setNewLabel] = useState("");
   const [newColor, setNewColor] = useState(PALETTE[3]);
   useEffect(() => {
-  if (!loaded) return;
-  const timeout = setTimeout(() => {
-    setDoc(doc(db, "datos", "cmr-v2"), { gastos, personas }, { merge: true });
-  }, 500);
-  return () => clearTimeout(timeout);
+  if (!loaded) {
+    console.log('⏳ Todavía no cargado, no guardo');
+    return;
+  }
+  console.log('💾 Guardando en Firebase...', { gastos: gastos.length, personas: personas.length });
+  setDoc(doc(db, "datos", "cmr-v2"), { gastos, personas }, { merge: true })
+    .then(() => console.log('✅ Guardado exitoso'))
+    .catch(e => console.error('❌ Error al guardar:', e));
 }, [gastos, personas, loaded]);
   // ── Métricas ─────────────────────────────────────────────────────────────────
   const diasPagar    = daysTo(fechaPago);
